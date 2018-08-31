@@ -4,12 +4,25 @@ using Newtonsoft.Json;
 using TestMakerFreeWebApp.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
+using TestMakerFreeWebApp.Data;
+using Mapster;
+using TestMakerFreeWebApp.Data.Models;
 
 namespace TestMakerFreeWebApp.Controllers
 {
     [Route("api/[controller]")]
     public class QuizController : Controller
     {
+        #region Private Fields
+        private ApplicationDbContext DbContext;
+        #endregion
+
+        #region Constructor
+        public QuizController(ApplicationDbContext context)
+        {
+            DbContext = context;
+        }
+        #endregion
         #region RESTful conventions methods
         /// <summary>
         /// GET: api/quiz/{id}
@@ -21,18 +34,20 @@ namespace TestMakerFreeWebApp.Controllers
         public IActionResult Get(int id)
         {
             // create a sample quiz to match the given request
-            var v = new QuizViewModel()
+            var v = DbContext.Quizzes.Where(i => i.Id == id).FirstOrDefault();
+
+            //handle requests asking for non-existing quizzes
+            if(v == null)
             {
-                Id = id,
-                Title = String.Format("Sample quiz with id {0}", id),
-                Description = "Not a real quiz: it's just a sample!",
-                CreatedDate = DateTime.Now,
-                LastModifiedDate = DateTime.Now
-            };
+                return NotFound(new
+                {
+                    Error = $"Quiz ID {id} has not been found!",
+                });
+            }
 
             // output the result in JSON format
             return new JsonResult(
-                v,
+                v.Adapt<QuizViewModel>(),
                 new JsonSerializerSettings()
                 {
                     Formatting = Formatting.Indented
@@ -44,9 +59,36 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The QuizViewModel containing the data to insert</param>
         [HttpPut]
-        public IActionResult Put(QuizViewModel model)
+        public IActionResult Put([FromBody]QuizViewModel model)
         {
-            throw new NotImplementedException();
+            if (model == null) return new StatusCodeResult(500);
+
+            var quiz = DbContext.Quizzes.Where(q => q.Id == model.Id).FirstOrDefault();
+
+            if(quiz == null)
+            {
+                return NotFound(new
+                {
+                    Error = $"Quiz ID {model.Id} has not been found",
+                });
+            }
+
+            quiz.Title = model.Title;
+            quiz.Description = model.Description;
+            quiz.Text = model.Text;
+            quiz.Notes = model.Notes;
+
+            quiz.LastModifiedDate = DateTime.Now;
+
+            quiz.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+
+            DbContext.SaveChanges();
+
+            return new JsonResult(quiz.Adapt<QuizViewModel>(),
+                new JsonSerializerSettings()
+                {
+                    Formatting = Formatting.Indented,
+                });
         }
 
         /// <summary>
@@ -54,9 +96,31 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The QuizViewModel containing the data to update</param>
         [HttpPost]
-        public IActionResult Post(QuizViewModel model)
+        public IActionResult Post([FromBody]QuizViewModel model)
         {
-            throw new NotImplementedException();
+            if (model == null) return new StatusCodeResult(500);
+
+            var quiz = new Quiz();
+
+            quiz.Title = model.Title;
+            quiz.Description = model.Description;
+            quiz.Text = model.Text;
+            quiz.Notes = model.Notes;
+
+            quiz.CreatedDate = DateTime.Now;
+            quiz.LastModifiedDate = quiz.CreatedDate;
+
+            quiz.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+
+            DbContext.Quizzes.Add(quiz);
+            DbContext.SaveChanges();
+
+            return new JsonResult(
+                    quiz.Adapt<QuizViewModel>(),
+                    new JsonSerializerSettings()
+                    {
+                        Formatting = Formatting.Indented,
+                    });
         }
 
         /// <summary>
@@ -66,7 +130,20 @@ namespace TestMakerFreeWebApp.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            throw new NotImplementedException();
+            var quiz = DbContext.Quizzes.Where(q => q.Id == id).FirstOrDefault();
+
+            if (quiz == null)
+            {
+                return NotFound(new
+                {
+                    Error = $"Quiz ID {id} has not been found",
+                });
+            }
+
+            DbContext.Quizzes.Remove(quiz);
+            DbContext.SaveChanges();
+
+            return new OkResult();
         }
         #endregion
 
@@ -80,34 +157,11 @@ namespace TestMakerFreeWebApp.Controllers
         [HttpGet("Latest/{num:int?}")]
         public IActionResult Latest(int num = 10)
         {
-            var sampleQuizzes = new List<QuizViewModel>();
-
-            // add a first sample quiz
-            sampleQuizzes.Add(new QuizViewModel()
-            {
-                Id = 1,
-                Title = "Which Shingeki No Kyojin character are you?",
-                Description = "Anime-related personality test",
-                CreatedDate = DateTime.Now,
-                LastModifiedDate = DateTime.Now
-            });
-
-            // add a bunch of other sample quizzes
-            for (int i = 2; i <= num; i++)
-            {
-                sampleQuizzes.Add(new QuizViewModel()
-                {
-                    Id = i,
-                    Title = String.Format("Sample Quiz {0}", i),
-                    Description = "This is a sample quiz",
-                    CreatedDate = DateTime.Now,
-                    LastModifiedDate = DateTime.Now
-                });
-            }
+            var latest = DbContext.Quizzes.OrderByDescending(q => q.CreatedDate).Take(num).ToArray();
 
             // output the result in JSON format
             return new JsonResult(
-                sampleQuizzes,
+                latest.Adapt<QuizViewModel[]>(),
                 new JsonSerializerSettings()
                 {
                     Formatting = Formatting.Indented
@@ -123,11 +177,10 @@ namespace TestMakerFreeWebApp.Controllers
         [HttpGet("ByTitle/{num:int?}")]
         public IActionResult ByTitle(int num = 10)
         {
-            var sampleQuizzes = ((JsonResult)Latest(num)).Value
-                as List<QuizViewModel>;
+            var byTitle = DbContext.Quizzes.OrderBy(q => q.Title).Take(num).ToArray();
 
             return new JsonResult(
-                sampleQuizzes.OrderBy(t => t.Title),
+                byTitle.Adapt<QuizViewModel[]>(),
                 new JsonSerializerSettings()
                 {
                     Formatting = Formatting.Indented
@@ -143,11 +196,10 @@ namespace TestMakerFreeWebApp.Controllers
         [HttpGet("Random/{num:int?}")]
         public IActionResult Random(int num = 10)
         {
-            var sampleQuizzes = ((JsonResult)Latest(num)).Value
-                as List<QuizViewModel>;
+            var random = DbContext.Quizzes.OrderBy(q => Guid.NewGuid()).Take(num).ToArray();
 
             return new JsonResult(
-                sampleQuizzes.OrderBy(t => Guid.NewGuid()),
+                random.Adapt<QuizViewModel[]>(),
                 new JsonSerializerSettings()
                 {
                     Formatting = Formatting.Indented
