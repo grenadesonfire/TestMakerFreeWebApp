@@ -26,11 +26,29 @@ export class QuizComponent {
 
             this.http.get<Quiz>(url).subscribe(result => {
                 this.quiz = result;
-            }, error => console.error(error));
+            }, error => console.log(error));
         }
         else {
             console.log("Invalid id: routing back to home...");
             this.router.navigate(["home"]);
+        }
+    }
+
+    onEdit() {
+        this.router.navigate(["quiz/edit", this.quiz.Id]);
+    }
+
+    onDelete() {
+        if (confirm("Dou you really want to delete this quiz?")) {
+            var url = this.baseUrl + "api/quiz/" + this.quiz.Id;
+            this.http
+                .delete(url)
+                .subscribe(
+                    res => {
+                        console.log("Quiz " + this.quiz.Id + " has been deleted.");
+                        this.router.navigate(["home"]);
+                    },
+                    error => console.log("Can't redirect!" + error));
         }
     }
 }

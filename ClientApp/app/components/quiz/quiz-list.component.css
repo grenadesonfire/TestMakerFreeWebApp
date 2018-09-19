@@ -3,6 +3,6 @@
     cursor: pointer;
 }
 
-    ul.quizzes li.selected {
-        background-color: #cccccc;
-    }
+ul.quizzes li.selected {
+    background-color: #cccccc;
+}

@@ -60,11 +60,11 @@ export class QuizEditComponent {
         }
         else {
             this.http
-                .put<Quiz>(url, quiz)
+                .post<Quiz>(url, quiz)
                 .subscribe(
                     res => {
                         var q = res;
-                        console.log("Quiz " + v.Id + "has been updated.");
+                        console.log("Quiz " + q.Id + "has been updated.");
                         this.router.navigate(["home"]);
                     },
                     error =>
