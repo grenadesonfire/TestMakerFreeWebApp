@@ -19,6 +19,21 @@ module.exports = (env) => {
             rules: [
                 { test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/, include: /ClientApp/, use: isDevBuild ? ['awesome-typescript-loader?silent=true', 'angular2-template-loader'] : '@ngtools/webpack' },
                 { test: /\.html$/, use: 'html-loader?minimize=false' },
+                {
+                    test: /\.less$/,
+                    use:
+                        [
+                            {
+                                loader: "style-loader" // creates style nodes from JS strings
+                            },
+                            {
+                                loader: "css-loader" // translates CSS into CommonJS
+                            },
+                            {
+                                loader: "less-loader" // compiles Less to CSS
+                            }
+                        ]
+                },                                        
                 { test: /\.css$/, use: [ 'to-string-loader', isDevBuild ? 'css-loader' : 'css-loader?minimize' ] },
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
             ]
