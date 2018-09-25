@@ -1,22 +1,35 @@
 ﻿<h2>{{title}}</h2>
 <div class="Answer-edit">
-    <div>
+    <div class="form-group">
         <label for="text">Answer text:</label>
         <br />
         <textarea id="text" [(ngModel)]="answer.Text"
-                  placeholder="enter a suitable text..."></textarea>
+                  placeholder="enter a suitable text..."
+                  class="form-control"></textarea>
     </div>
-    <div>
+    <div class="form-group">
         <label for="value">Score Value:</label>
         <br />
-        <select id="value" name="value" [(ngModel)]="answer.Value">
+        <select id="value" name="value" [(ngModel)]="answer.Value" class="form-control">
             <option *ngFor="let num of [-5,-4,-3,-2,-1,0,1,2,3,4,5]"
                     [value]="num">{{num}}</option>
         </select>
     </div>
     <div>
-        <input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(answer)"/>
-        <input *ngIf="!editMode" type="button" value="Create the Answer!" (click)="onSubmit(answer)" />
-        <input type="button" value="Cancel" (click)="onBack()"/>
+        <!--<input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(question)"/>-->
+        <button *ngIf="editMode" (click)="onSubmit(answer)" class="btn btn-sm btn-warning">
+            <span class="glyphicon glyphicon-edit"></span>
+            Apply Changes
+        </button>
+        <!--<input *ngIf="!editMode" type="button" value="Create the Question!" (click)="onSubmit(question)" />-->
+        <button *ngIf="!editMode" (click)="onSubmit(answer)" class="btn btn-sm btn-primary">
+            <span class="glyphicon glyphicon-plus-sign"></span>
+            Create the Answer!
+        </button>
+        <!--<input type="button" value="Cancel" (click)="onBack()"/>-->
+        <button (click)="onBack()" class="btn btn-sm">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+            Cancel
+        </button>
     </div>
 </div>

@@ -151,7 +151,9 @@ namespace TestMakerFreeWebApp.Controllers
             DbContext.SaveChanges();
 
             // return an HTTP Status 200 (OK).
-            return new OkResult();
+            return new JsonResult(
+                answer.Adapt<AnswerViewModel>(),
+                JsonSettings);
         }
         #endregion
 

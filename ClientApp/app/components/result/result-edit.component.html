@@ -1,25 +1,38 @@
 ﻿<h2>{{title}}</h2>
 <div class="result-edit">
-    <div>
+    <div class="form-group">
         <label for="text">Result text:</label>
         <br />
         <textarea id="text" [(ngModel)]="result.Text"
-                  placeholder="enter a suitable text..."></textarea>
+                  placeholder="enter a suitable text..."
+                  class="form-control"></textarea>
     </div>
-    <div>
+    <div class="form-group">
         <label for="MinValue">Minimum Score Value:</label>
         <br />
-        <input type="number" id="MinValue" name="MinValue" [(ngModel)]="result.MinValue" />
+        <input type="number" id="MinValue" name="MinValue" [(ngModel)]="result.MinValue" class="form-control"/>
     </div>
-    <div>
+    <div class="form-group">
         <label for="MaxValue">Maximum Score Value:</label>
         <br />
-        <input type="number" id="MaxValue" name="MaxValue" [(ngModel)]="result.MaxValue" />
+        <input type="number" id="MaxValue" name="MaxValue" [(ngModel)]="result.MaxValue" class="form-control"/>
     </div>
 
     <div>
-        <input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(result)" />
-        <input *ngIf="!editMode" type="button" value="Create the Result!" (click)="onSubmit(result)" />
-        <input type="button" value="Cancel" (click)="onBack()" />
+        <!--<input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(question)"/>-->
+        <button *ngIf="editMode" (click)="onSubmit(result)" class="btn btn-sm btn-warning">
+            <span class="glyphicon glyphicon-edit"></span>
+            Apply Changes
+        </button>
+        <!--<input *ngIf="!editMode" type="button" value="Create the Question!" (click)="onSubmit(question)" />-->
+        <button *ngIf="!editMode" (click)="onSubmit(result)" class="btn btn-sm btn-primary">
+            <span class="glyphicon glyphicon-plus-sign"></span>
+            Create the Result!
+        </button>
+        <!--<input type="button" value="Cancel" (click)="onBack()"/>-->
+        <button (click)="onBack()" class="btn btn-sm">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+            Cancel
+        </button>
     </div>
 </div>
