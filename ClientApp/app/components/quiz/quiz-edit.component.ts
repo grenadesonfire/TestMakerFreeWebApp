@@ -1,4 +1,5 @@
 ﻿import { Component, Inject, OnInit } from "@angular/core";
+import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 
@@ -11,6 +12,7 @@ import { HttpClient } from "@angular/common/http";
 export class QuizEditComponent {
     title: string;
     quiz: Quiz;
+    form: FormGroup;
 
     // this will be TRUE when editing an existing quiz,
     // FALSE when creating a new one.
@@ -19,9 +21,13 @@ export class QuizEditComponent {
     constructor(private activatedRoute: ActivatedRoute,
         private router: Router,
         private http: HttpClient,
+        private fb: FormBuilder,
         @Inject('BASE_URL') private baseUrl: string) {
 
         this.quiz = <Quiz>{};
+
+        // initialize the form
+        this.createForm();
 
         var id = +this.activatedRoute.snapshot.params["id"];
         if (id) {
@@ -33,6 +39,9 @@ export class QuizEditComponent {
                 res => {
                     this.quiz = res;
                     this.title = "Edit - " + this.quiz.Title;
+
+                    // update the form with the quiz value
+                    this.updateForm();
                 },
                 error =>
                     console.error(error));
@@ -44,11 +53,21 @@ export class QuizEditComponent {
     }
 
     onSubmit(quiz: Quiz) {
+        // build a temporary quiz object from the form values
+        var tempQuiz = <Quiz>{};
+        tempQuiz.Title = this.form.value.Title;
+        tempQuiz.Description = this.form.value.Description;
+        tempQuiz.Text = this.form.value.Text;
+
         var url = this.baseUrl + "api/quiz";
 
         if (this.editMode) {
+            // don't forget to set the tempQuiz Id,
+            //otherwise the EDIT would fail!
+            tempQuiz.Id = this.quiz.Id;
+
             this.http
-                .put<Quiz>(url, quiz)
+                .put<Quiz>(url, tempQuiz)
                 .subscribe(
                 res => {
                     var v = res;
@@ -60,7 +79,7 @@ export class QuizEditComponent {
         }
         else {
             this.http
-                .post<Quiz>(url, quiz)
+                .post<Quiz>(url, tempQuiz)
                 .subscribe(
                     res => {
                         var q = res;
@@ -74,5 +93,40 @@ export class QuizEditComponent {
 
     onBack() {
         this.router.navigate(["home"]);
+    }
+
+    createForm() {
+        this.form = this.fb.group({
+            Title: ['', Validators.required],
+            Description: '',
+            Text: ''
+        });
+    }
+
+    updateForm() {
+        this.form.setValue({
+            Title: this.quiz.Title,
+            Description: this.quiz.Description || '',
+            Text: this.quiz.Text || ''
+        });
+    }
+
+    getFormControl(name: string) {
+        return this.form.get(name);
+    }
+
+    isValid(name: string) {
+        var e = this.getFormControl(name);
+        return e && e.valid;
+    }
+
+    isChanged(name: string) {
+        var e = this.getFormControl(name);
+        return e && (e.dirty || e.touched);
+    }
+
+    hasError(name: string) {
+        var e = this.getFormControl(name);
+        return e && (e.dirty || e.touched) && !e.valid;
     }
 }

@@ -1,26 +1,66 @@
 ﻿<h2>{{title}}</h2>
 <div class="question-edit">
-    <div class="form-group">
-        <label for="text">Question text:</label>
-        <br />
-        <textarea id="text" [(ngModel)]="question.Text" placeholder="enter a suitable text..." class="form-control"></textarea>
-    </div>
-    <div>
-        <!--<input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(question)"/>-->
-        <button *ngIf="editMode" (click)="onSubmit(question)" class="btn btn-sm btn-warning">
-            <span class="glyphicon glyphicon-edit"></span>
-            Apply Changes
-        </button>
-        <!--<input *ngIf="!editMode" type="button" value="Create the Question!" (click)="onSubmit(question)" />-->
-        <button *ngIf="!editMode" (click)="onSubmit(question)" class="btn btn-sm btn-primary">
-            <span class="glyphicon glyphicon-plus-sign"></span>
-            Create the Question!
-        </button>
-        <!--<input type="button" value="Cancel" (click)="onBack()"/>-->
-        <button (click)="onBack()" class="btn btn-sm">
-            <span class="glyphicon glyphicon-remove-circle"></span>
-            Cancel
-        </button>
-    </div>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group"
+             [ngClass]="{ 'has-error has-feedback' : hasError('Text') }">
+            <label for="text">Question text:</label>
+            <br />
+            <textarea id="text" 
+                      formControlName="Text"
+                      placeholder="enter a suitable text..." 
+                      class="form-control"></textarea>
+            <span *ngIf="hasError('Text')"
+                  class="glyphicon glyphicon-remove form-control-feedback"
+                  aria-hidden="true"></span>
+            <div *ngIf="hasError('Text')"
+                 class="help-block">
+                Text is a required field: please insert a valid block of Text.
+            </div>
+        </div>
+        <div>
+            <!--<input *ngIf="editMode" type="button" value="Apply Changes" (click)="onSubmit(question)"/>-->
+            <button *ngIf="editMode" type="submit"
+                    [disabled]="form.invalid"
+                    class="btn btn-warning">
+                <span class="glyphicon glyphicon-edit"></span>
+                Apply Changes
+            </button>
+            <!--<input *ngIf="!editMode" type="button" value="Create the Question!" (click)="onSubmit(question)" />-->
+            <button *ngIf="!editMode" type="submit" 
+                    [disabled]="form.invalid"
+                    class="btn btn-primary">
+                <span class="glyphicon glyphicon-plus-sign"></span>
+                Create the Question!
+            </button>
+            <!--<input type="button" value="Cancel" (click)="onBack()"/>-->
+            <button type="button"
+                    (click)="onBack()" 
+                    class="btn">
+                <span class="glyphicon glyphicon-remove-circle"></span>
+                Cancel
+            </button>
+        </div>
+    </form>
     <answer-list *ngIf="editMode" [question]="question"></answer-list>
 </div>
+<!--
+<div class="panel panel-info"
+     style="margin-top: 20px;">
+    <div class="panel-heading">Form debug info</div>
+    <div class="panel-body">
+        <p><strong>Form value:</strong></p>
+        <div class="help-block">
+            {{ form.value | json }}
+        </div>
+        <p><strong>Form status:</strong></p>
+        <div class="help-block">
+            {{ form.status | json }}
+        </div>
+    </div>
+    <p><strong>Form activity log:</strong></p>
+    <div class="help-block">
+        <span *ngIf="activityLog"
+              [innerHTML]="activityLog"></span>
+    </div>
+</div>
+-->
