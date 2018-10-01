@@ -7,6 +7,8 @@ using System.Linq;
 using TestMakerFreeWebApp.Data;
 using Mapster;
 using TestMakerFreeWebApp.Data.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace TestMakerFreeWebApp.Controllers
 {
@@ -14,7 +16,11 @@ namespace TestMakerFreeWebApp.Controllers
     public class QuizController : BaseApiController
     {
         #region Constructor
-        public QuizController(ApplicationDbContext context) : base(context)
+        public QuizController(
+            ApplicationDbContext adc,
+            RoleManager<IdentityRole> rm,
+            UserManager<ApplicationUser> um,
+            IConfiguration config) : base(adc, rm, um, config)
         {
 
         }
