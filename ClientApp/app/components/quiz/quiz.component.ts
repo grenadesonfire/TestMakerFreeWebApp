@@ -1,5 +1,6 @@
 ﻿import { Component, Inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+import { AuthService } from '../../services/auth.service';
 import { HttpClient } from "@angular/common/http";
 
 @Component({
@@ -11,9 +12,11 @@ import { HttpClient } from "@angular/common/http";
 export class QuizComponent {
     quiz: Quiz;
 
-    constructor(private activatedRoute: ActivatedRoute,
+    constructor(
+        private activatedRoute: ActivatedRoute,
         private router: Router,
         private http: HttpClient,
+        public auth: AuthService,
         @Inject('BASE_URL') private baseUrl: string) {
 
         // create an empty object from the Quiz interface

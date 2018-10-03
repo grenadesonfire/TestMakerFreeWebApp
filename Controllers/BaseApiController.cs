@@ -8,6 +8,7 @@ using TestMakerFreeWebApp.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity;
 using TestMakerFreeWebApp.Data.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestMakerFreeWebApp.Controllers
 {

@@ -1,8 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+
+import { AuthService } from './services/auth.service';
+import { AuthInterceptor } from './services/auth.interceptor';
+import { AuthResponseInterceptor } from './services/auth.response.interceptor';
 
 import { AppComponent } from './components/app/app.component';
 import { NavMenuComponent } from './components/navmenu/navmenu.component';
@@ -12,14 +16,14 @@ import { QuizComponent } from './components/quiz/quiz.component';
 import { QuizEditComponent } from './components/quiz/quiz-edit.component';
 import { QuizSearchComponent } from './components/quiz/quiz-search.component';
 import { QuestionListComponent } from './components/question/question-list.component';
-import { AboutComponent } from './components/about/about.component';
-import { LoginComponent } from './components/login/login.component';
-import { PageNotFoundComponent } from './components/pagenotfound/pagenotfound.component';
 import { QuestionEditComponent } from './components/question/question-edit.component';
 import { AnswerListComponent } from './components/answer/answer-list.component';
 import { AnswerEditComponent } from './components/answer/answer-edit.component';
 import { ResultListComponent } from './components/result/result-list.component';
 import { ResultEditComponent } from './components/result/result-edit.component';
+import { AboutComponent } from './components/about/about.component';
+import { LoginComponent } from './components/login/login.component';
+import { PageNotFoundComponent } from './components/pagenotfound/pagenotfound.component';
 
 @NgModule({
     declarations: [
@@ -61,6 +65,19 @@ import { ResultEditComponent } from './components/result/result-edit.component';
             { path: 'login', component: LoginComponent },
             { path: '**', component: PageNotFoundComponent }
         ])
+    ],
+    providers: [
+        AuthService,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthResponseInterceptor,
+            multi: true
+        }
     ]
 })
 export class AppModuleShared {

@@ -9,6 +9,7 @@ using Mapster;
 using TestMakerFreeWebApp.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TestMakerFreeWebApp.Controllers
 {
@@ -33,6 +34,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// <param name="id">The ID of an existing Answer</param>
         /// <returns>the Answer with the given {id}</returns>
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult Get(int id)
         {
             var answer = DbContext.Answers.Where(i => i.Id == id).FirstOrDefault();
@@ -57,6 +59,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The AnswerViewModel containing the data to insert</param>
         [HttpPut]
+        [Authorize]
         public IActionResult Put([FromBody]AnswerViewModel model)
         {
             // return a generic HTTP Status 500 (Server Error)
@@ -101,6 +104,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The AnswerViewModel containing the data to update</param>
         [HttpPost]
+        [Authorize]
         public IActionResult Post([FromBody]AnswerViewModel model)
         {
             // return a generic HTTP Status 500 (Server Error)
@@ -136,6 +140,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="id">The ID of an existing Answer</param>
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             // retrieve the answer from the Database

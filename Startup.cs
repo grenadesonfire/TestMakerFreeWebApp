@@ -1,27 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SpaServices.Webpack;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using TestMakerFreeWebApp.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Diagnostics;
 using TestMakerFreeWebApp.Data.Models;
 
 namespace TestMakerFree
 {
-    /// <summary>
-    /// Use the below code to generate symmetric Secret Key
-    ///     var hmac = new HMACSHA256();
-    ///     var key = Convert.ToBase64String(hmac.Key);
-    /// </summary>
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -36,12 +32,15 @@ namespace TestMakerFree
         {
             services.AddMvc();
 
-            //Add EntityFramework support for SqlServer
+            // Add EntityFramework support for SqlServer.
             services.AddEntityFrameworkSqlServer();
 
-            //Add ApplicationDbContext
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            // Add ApplicationDbContext.
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+                );
 
+            // Add ASP.NET Identity support
             services.AddIdentity<ApplicationUser, IdentityRole>(
                 opts =>
                 {
@@ -53,24 +52,25 @@ namespace TestMakerFree
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            //Add Authentication with JWT Tokens
+            // Add Authentication
             services.AddAuthentication(opts =>
             {
                 opts.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                 opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 opts.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+            // Add Jwt token support
             .AddJwtBearer(cfg =>
             {
                 cfg.RequireHttpsMetadata = false;
                 cfg.SaveToken = true;
-                cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+                cfg.TokenValidationParameters = new TokenValidationParameters()
                 {
-                    //standard configuration
+                    // standard configuration
                     ValidIssuer = Configuration["Auth:Jwt:Issuer"],
-                    ValidAudience = Configuration["Auth:Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(Configuration["Auth:Jwt:Key"])),
+                    ValidAudience = Configuration["Auth:Jwt:Audience"],
                     ClockSkew = TimeSpan.Zero,
 
                     // security switches
@@ -79,7 +79,14 @@ namespace TestMakerFree
                     ValidateIssuerSigningKey = true,
                     ValidateAudience = true
                 };
-            });
+                cfg.IncludeErrorDetails = true;
+            })
+            // Add Facebook support
+            /*.AddFacebook(opts =>
+            {
+                opts.AppId = Configuration["Auth:Facebook:AppId"];
+                opts.AppSecret = Configuration["Auth:Facebook:AppSecret"];
+            })*/;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -125,20 +132,6 @@ namespace TestMakerFree
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
-
-            // Create a service scope to get an ApplicationDbContext instance using DI
-            using(var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var dbContext = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
-
-                var roleManager = serviceScope.ServiceProvider.GetService<RoleManager<IdentityRole>>();
-
-                var userManager = serviceScope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-
-                // Create the Db if it doesn't exist and applies any pending migration.
-                dbContext.Database.Migrate();
-                DbSeeder.Seed(dbContext, roleManager, userManager);
-            }
         }
     }
 }

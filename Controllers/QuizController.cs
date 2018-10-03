@@ -9,6 +9,8 @@ using Mapster;
 using TestMakerFreeWebApp.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace TestMakerFreeWebApp.Controllers
 {
@@ -33,6 +35,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// <param name="id">The ID of an existing Quiz</param>
         /// <returns>the Quiz with the given {id}</returns>
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult Get(int id)
         {
             // create a sample quiz to match the given request
@@ -58,6 +61,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The QuizViewModel containing the data to insert</param>
         [HttpPut]
+        [Authorize]
         public IActionResult Put([FromBody]QuizViewModel model)
         {
             if (model == null) return new StatusCodeResult(500);
@@ -79,7 +83,7 @@ namespace TestMakerFreeWebApp.Controllers
 
             quiz.LastModifiedDate = DateTime.Now;
 
-            quiz.UserId = DbContext.Users.Where(u => u.UserName == "Admin").FirstOrDefault().Id;
+            quiz.UserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             DbContext.SaveChanges();
 
@@ -93,6 +97,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="model">The QuizViewModel containing the data to update</param>
         [HttpPost]
+        [Authorize]
         public IActionResult Post([FromBody]QuizViewModel model)
         {
             if (model == null) return new StatusCodeResult(500);
@@ -122,6 +127,7 @@ namespace TestMakerFreeWebApp.Controllers
         /// </summary>
         /// <param name="id">The ID of an existing Test</param>
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(int id)
         {
             var quiz = DbContext.Quizzes.Where(q => q.Id == id).FirstOrDefault();
